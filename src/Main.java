@@ -1,6 +1,10 @@
+import server.AuctionServer;
+
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Nothing!");
+        AuctionServer server = new AuctionServer();
+
+        server.run(1099);
     }
 }
