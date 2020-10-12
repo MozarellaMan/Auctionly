@@ -1,6 +1,8 @@
 package server.item;
 
-public class AuctionItem {
+import java.io.Serializable;
+
+public class AuctionItem implements Serializable {
     private int itemId;
     private String itemTitle;
     private String itemDescription;
@@ -32,5 +34,15 @@ public class AuctionItem {
 
     public ItemCondition getCondition() {
         return condition;
+    }
+
+    @Override
+    public String toString() {
+        return "AuctionItem {" +
+                "itemId=" + itemId +
+                ", itemTitle='" + itemTitle + '\'' +
+                ", itemDescription='" + itemDescription + '\'' +
+                ", condition=" + condition +
+                '}';
     }
 }
