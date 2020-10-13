@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -51,6 +52,8 @@ public class ClientRequest extends Client implements Serializable {
             return auctionStub.getSpec(itemId, request);
         } catch (ConnectException e) {
             ClientRunner.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            ClientRunner.warning("Remote call error: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Client exception: " + e.toString());
             e.printStackTrace();
