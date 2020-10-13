@@ -1,6 +1,6 @@
 import client.Client;
+import client.ClientRequest;
 import server.AuctionServer;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -8,11 +8,21 @@ public class Main {
 
         server.run(1099);
 
-        Client client = new Client();
+        try {
+            ClientRequest request = new ClientRequest();
+            request.make();
+            request.test(3);
 
-        client.test(1, 5);
-        client.test(2, 5);
-        client.test(3, 5);
-        client.test(4, 5);
+        } catch (Exception e) {
+            System.err.println("Client request creation error: ");
+            e.printStackTrace();
+        }
+
+//        Client client = new Client();
+//
+//        client.test(1);
+//        client.test(2);
+//        client.test(3);
+//        client.test(4);
     }
 }

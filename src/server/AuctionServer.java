@@ -1,21 +1,16 @@
 package server;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
+import java.rmi.Naming;
 
-public class AuctionServer extends AuctionService {
+
+public class AuctionServer {
     public void run(int port) {
         try {
             AuctionService auctionService = new AuctionService();
 
-            Auction auctionStub = (Auction) UnicastRemoteObject.exportObject(auctionService, 0);
+            Naming.rebind("rmi://localhost/AuctionService", auctionService);
 
-            Registry registry = LocateRegistry.createRegistry(port);
-
-            registry.bind("Auction", auctionStub);
-            System.out.println("Server ready! 🚀");
-
+            System.out.println("Server ready! 🚀 Running on... " +  port);
 
         } catch (Exception e) {
             System.err.println("Server exception: " + e.toString());
