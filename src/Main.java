@@ -1,4 +1,4 @@
-import client.Client;
+
 import client.ClientRequest;
 import server.AuctionServer;
 public class Main {

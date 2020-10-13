@@ -3,12 +3,12 @@ package server;
 import server.item.AuctionItem;
 import server.item.ItemRepository;
 
-
 import javax.crypto.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class AuctionService extends java.rmi.server.UnicastRemoteObject implements Auction {
 
@@ -36,10 +36,23 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         keyGen.init(128);
 
         SecretKey aesKey = keyGen.generateKey();
+        System.out.println("Request creation for client " + clientRequest + " successful. Your key: " + Base64.getEncoder().encodeToString(aesKey.getEncoded()) + "\n(Keep this safe!)");
 
         Cipher auctionItemCipher = Cipher.getInstance("AES");
         auctionItemCipher.init(Cipher.ENCRYPT_MODE, aesKey);
 
         return new SealedObject(item, auctionItemCipher);
+    }
+
+    @Override
+    public AuctionItem decryptItem(SealedObject sealedItem, SecretKey key) throws RemoteException {
+        try {
+            return (AuctionItem) sealedItem.getObject(key);
+        } catch (Exception e) {
+            System.err.println("Server decryption exception: ");
+            e.printStackTrace();
+            return null;
+        }
+
     }
 }
