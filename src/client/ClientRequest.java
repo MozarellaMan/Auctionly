@@ -4,6 +4,7 @@ import server.Auction;
 import server.item.AuctionItem;
 
 import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.rmi.ConnectException;
@@ -31,6 +32,18 @@ public class ClientRequest extends Client implements Serializable {
         requestCipher.init(Cipher.ENCRYPT_MODE, aesKey);
 
         System.out.println("Request creation for client " + clientId + " successful. Your key: " + Base64.getEncoder().encodeToString(aesKey.getEncoded()) + "\n(Keep this safe!)");
+
+        this.request = new SealedObject(request, requestCipher);
+    }
+
+    public void make(String key) throws IOException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        SecretKey secretKey = new SecretKeySpec(decodedKey, "AES");
+
+        Cipher requestCipher = Cipher.getInstance("AES");
+        requestCipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+        System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
 
         this.request = new SealedObject(request, requestCipher);
     }
