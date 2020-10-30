@@ -18,5 +18,4 @@ public interface Auction extends Remote {
 
     SealedObject getSpec(int itemId, SealedObject clientRequest) throws IOException, IllegalBlockSizeException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException;
 
-    AuctionItem decryptItem(SealedObject sealedItem, SecretKey key) throws RemoteException;
 }

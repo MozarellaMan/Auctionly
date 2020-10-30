@@ -2,6 +2,8 @@ package client;
 
 import server.Auction;
 import server.item.AuctionItem;
+import util.SecurityHelper;
+import util.Util;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -17,35 +19,27 @@ import java.util.Optional;
 
 public class ClientRequest extends Client implements Serializable {
     private SealedObject request;
+    private final SecurityHelper<ClientRequest> securityHelper;
 
     public ClientRequest(){
         super();
+        securityHelper = new SecurityHelper<>();
     }
 
-    public void make() throws NoSuchAlgorithmException, NoSuchPaddingException, IOException, IllegalBlockSizeException, InvalidKeyException {
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        keyGen.init(128);
-
-        SecretKey aesKey = keyGen.generateKey();
-
-        Cipher requestCipher = Cipher.getInstance("AES");
-        requestCipher.init(Cipher.ENCRYPT_MODE, aesKey);
-
-        System.out.println("Request creation for client " + clientId + " successful. Your key: " + Base64.getEncoder().encodeToString(aesKey.getEncoded()) + "\n(Keep this safe!)");
-
-        this.request = new SealedObject(request, requestCipher);
+    public void make()  {
+        var sealedRequest = securityHelper.encrypt(this, true);
+        sealedRequest.ifPresentOrElse(req -> {
+            System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
+            this.request = req;
+        }, () -> Util.warning("Request could not be encrypted!"));
     }
 
-    public void make(String key) throws IOException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-        byte[] decodedKey = Base64.getDecoder().decode(key);
-        SecretKey secretKey = new SecretKeySpec(decodedKey, "AES");
-
-        Cipher requestCipher = Cipher.getInstance("AES");
-        requestCipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
-        System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
-
-        this.request = new SealedObject(request, requestCipher);
+    public void make(String key) {
+        var sealedRequest = securityHelper.encrypt(this, key);
+        sealedRequest.ifPresentOrElse(req -> {
+            System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
+            this.request = req;
+        }, () -> Util.warning("Request could not be encrypted!"));
     }
 
 
@@ -59,29 +53,18 @@ public class ClientRequest extends Client implements Serializable {
         }
     }
 
-    public SealedObject testSealed(int itemId) {
+    public SealedObject getSealed(int itemId) {
         try {
             Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
             return auctionStub.getSpec(itemId, request);
         } catch (ConnectException e) {
-            ClientRunner.warning("Connection could not be made to server!");
+            Util.warning("Connection could not be made to server!");
         } catch (RemoteException e) {
-            ClientRunner.warning("Remote call error: " + e.getMessage());
+            Util.warning("Remote call error: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Client exception: " + e.toString());
-            e.printStackTrace();
+            Util.warning("Client exception: " + e.getMessage());
         }
         return null;
     }
 
-    public Optional<AuctionItem> requestDecrypt(SecretKey key, SealedObject item) {
-        try {
-            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
-            return Optional.ofNullable(auctionStub.decryptItem(item, key));
-        } catch (Exception e) {
-            System.err.println("Client exception: " + e.toString());
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
 }

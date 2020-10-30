@@ -1,53 +1,43 @@
 package client;
 
+import server.item.AuctionItem;
+import util.SecurityHelper;
+import util.Util;
+
 import javax.crypto.SealedObject;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.Scanner;
 
 public class ClientRunner {
 
-    public static final String RED = "\033[0;31m";
-    public static final String RESET = "\033[0m";
     public static final String KEY_PATH = "./key.txt";
+    public static final SecurityHelper<AuctionItem> AUCTION_ITEM_SECURITY = new SecurityHelper<>();
 
     public static boolean keyExists() {
         var file = Paths.get(KEY_PATH);
         return Files.exists(file);
     }
 
-    public static void warning(String input) {
-        System.out.println(RED + input + RESET);
-    }
-
-    public static void attemptDecrypt(ClientRequest client, SealedObject object, Scanner scanner) {
+    public static void attemptDecrypt(SealedObject object, Scanner scanner) {
         System.out.println("The response is encrypted.");
-        SecretKey secretKey = null;
-        if (keyExists()) {
+        boolean keyExists = keyExists();
+        String onSystemKey = null;
+        if (keyExists) {
             System.out.println("Attempting decryption with on system key...");
             try {
-                var key = new String(Files.readAllBytes(Paths.get(KEY_PATH)));
-                byte[] decodedKey = Base64.getDecoder().decode(key);
-                secretKey = new SecretKeySpec(decodedKey, "AES");
+                onSystemKey = new String(Files.readAllBytes(Paths.get(KEY_PATH)));
             } catch (IOException e) {
-                e.printStackTrace();
+                Util.warning("Error reading key file: " +  e.getMessage());
             }
         } else {
             System.out.println("Attempt decryption with key:");
-            byte[] encodedKey = Base64.getDecoder().decode(scanner.nextLine());
-            if (encodedKey.length != 16) {
-                warning("Key is not the required length!");
-                return;
-            }
-            secretKey = new SecretKeySpec(encodedKey, "AES");
-
         }
-        var item = client.requestDecrypt(secretKey, object);
-        item.ifPresentOrElse(System.out::println, () -> warning("Item could not be decrypted!"));
+
+        var secretKey = keyExists ? SecurityHelper.keyFromString(onSystemKey) : SecurityHelper.keyFromString(scanner.nextLine());
+        var item = AUCTION_ITEM_SECURITY.decrypt(object,secretKey);
+        item.ifPresentOrElse(System.out::println, () -> Util.warning("Item could not be decrypted!"));
     }
 
     public static void main(String[] args) {
@@ -74,13 +64,13 @@ public class ClientRunner {
 
             if (inputArgs.length == 2 && inputArgs[0].equals("get-spec")) {
                 int id = Integer.parseInt(inputArgs[1]);
-                var sealedObj = request.testSealed(id);
-                if (sealedObj != null) attemptDecrypt(request, sealedObj, scanner);
+                var sealedObj = request.getSealed(id);
+                if (sealedObj != null) attemptDecrypt(sealedObj, scanner);
             } else if (inputArgs[0].equals("quit")) {
                 System.out.println("Bye!");
                 break;
             } else {
-                warning("Unsupported command!");
+                Util.warning("Unsupported command!");
             }
         }
         scanner.close();

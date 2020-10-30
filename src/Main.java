@@ -18,11 +18,5 @@ public class Main {
             e.printStackTrace();
         }
 
-//        Client client = new Client();
-//
-//        client.test(1);
-//        client.test(2);
-//        client.test(3);
-//        client.test(4);
     }
 }

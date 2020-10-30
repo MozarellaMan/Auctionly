@@ -58,15 +58,4 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         return new SealedObject(item, auctionItemCipher);
     }
 
-    @Override
-    public AuctionItem decryptItem(SealedObject sealedItem, SecretKey key) throws RemoteException {
-        try {
-            return (AuctionItem) sealedItem.getObject(key);
-        } catch (Exception e) {
-            System.err.println("Server decryption exception: ");
-            e.printStackTrace();
-            return null;
-        }
-
-    }
 }
