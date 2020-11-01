@@ -2,14 +2,11 @@ package server;
 
 import server.item.AuctionItem;
 import server.item.ItemRepository;
+import util.SecurityHelper;
 
-import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
+import javax.crypto.SealedObject;
 import java.io.IOException;
 import java.rmi.RemoteException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 public class AuctionService extends java.rmi.server.UnicastRemoteObject implements Auction {
 
@@ -33,29 +30,23 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
     @Override
-    public SealedObject getSpec(int itemId, SealedObject clientRequest) throws IOException, IllegalBlockSizeException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException {
+    public SealedObject getSpec(int itemId, SealedObject clientRequest) throws IOException {
         System.out.println("Request for encrypted client " + clientRequest);
         AuctionItem item = ItemRepository.getAuctionItem(itemId).orElseThrow(
                 () -> new RemoteException("Encrypted client failed:\n\tAuction item with id " + itemId + " does not exist!")
         );
 
-        SecretKey aesKey;
+        var itemSecurityHelper = new SecurityHelper<AuctionItem>();
 
         if (key == null) {
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-            keyGen.init(128);
-            aesKey = keyGen.generateKey();
-            System.out.println("Request creation for client " + clientRequest + " successful. Your key: " + Base64.getEncoder().encodeToString(aesKey.getEncoded()) + "\n(Keep this safe!)");
+            return itemSecurityHelper.encrypt(item, true).orElseThrow(
+                    () -> new RemoteException("Error: Auction item response could not be encrypted."));
         } else {
-            byte[] decodedKey = Base64.getDecoder().decode(key);
-            aesKey = new SecretKeySpec(decodedKey, "AES");
+            return itemSecurityHelper.encrypt(item, key).orElseThrow(
+                    () -> new RemoteException("Error: Auction item response could not be encrypted.")
+            );
         }
 
-
-        Cipher auctionItemCipher = Cipher.getInstance("AES");
-        auctionItemCipher.init(Cipher.ENCRYPT_MODE, aesKey);
-
-        return new SealedObject(item, auctionItemCipher);
     }
 
 }

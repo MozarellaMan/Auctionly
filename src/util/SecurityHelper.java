@@ -11,9 +11,9 @@ import java.util.Optional;
 
 import static util.Util.warning;
 
-public class SecurityHelper<T extends Serializable> implements Serializable{
+public class SecurityHelper<T extends Serializable> implements Serializable {
 
-    public static SecretKey keyFromString(String input){
+    public static SecretKey keyFromString(String input) {
         byte[] decodedKey = Base64.getDecoder().decode(input);
         return new SecretKeySpec(decodedKey, "AES");
     }

@@ -52,8 +52,7 @@ public class ClientRunner {
                 request.make();
             }
         } catch (Exception e) {
-            System.err.println("Client request creation error: ");
-            e.printStackTrace();
+            System.err.println("Client request creation error: " + e.getClass().getName());
         }
 
         System.out.println("Enter a request: ");

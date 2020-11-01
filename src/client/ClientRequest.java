@@ -1,21 +1,14 @@
 package client;
 
 import server.Auction;
-import server.item.AuctionItem;
 import util.SecurityHelper;
 import util.Util;
 
-import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.IOException;
+import javax.crypto.SealedObject;
 import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Optional;
 
 public class ClientRequest extends Client implements Serializable {
     private SealedObject request;
@@ -60,7 +53,7 @@ public class ClientRequest extends Client implements Serializable {
         } catch (ConnectException e) {
             Util.warning("Connection could not be made to server!");
         } catch (RemoteException e) {
-            Util.warning("Remote call error: " + e.getMessage());
+            Util.warning("Remote call error: " + e.getLocalizedMessage());
         } catch (Exception e) {
             Util.warning("Client exception: " + e.getMessage());
         }
