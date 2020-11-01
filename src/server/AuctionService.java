@@ -5,7 +5,6 @@ import server.item.ItemRepository;
 import util.SecurityHelper;
 
 import javax.crypto.SealedObject;
-import java.io.IOException;
 import java.rmi.RemoteException;
 
 public class AuctionService extends java.rmi.server.UnicastRemoteObject implements Auction {
@@ -30,7 +29,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
     @Override
-    public SealedObject getSpec(int itemId, SealedObject clientRequest) throws IOException {
+    public SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException {
         System.out.println("Request for encrypted client " + clientRequest);
         AuctionItem item = ItemRepository.getAuctionItem(itemId).orElseThrow(
                 () -> new RemoteException("Encrypted client failed:\n\tAuction item with id " + itemId + " does not exist!")
