@@ -16,7 +16,7 @@ public class Item implements Serializable {
         this.condition = condition;
     }
 
-    public static Item Of(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
+    public static Item of(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
         return new Item(itemId, itemTitle, itemDescription, condition);
     }
 
