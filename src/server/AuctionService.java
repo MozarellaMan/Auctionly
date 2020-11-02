@@ -3,6 +3,7 @@ package server;
 import server.auctions.AuctionRepository;
 import server.item.Item;
 import server.item.ItemRepository;
+import server.user.UserRepository;
 import util.SecurityHelper;
 
 import javax.crypto.SealedObject;
@@ -13,6 +14,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
     private String key;
     private AuctionRepository auctions;
+    private UserRepository users;
 
     protected AuctionService() throws RemoteException {
         super();
@@ -22,6 +24,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         super();
         this.key = key;
         this.auctions = new AuctionRepository();
+        this.users = new UserRepository();
     }
 
     @Override
