@@ -29,12 +29,22 @@ public class AuctionItem {
         return latestPrice;
     }
 
-    public void bid(float offer) {
-        if (offer > this.latestPrice)
+    public boolean bid(float offer) {
+        if (offer < reservePrice)
+            return false;
+        if (offer > this.latestPrice) {
             this.latestPrice = offer;
+            return true;
+        }
+        return false;
     }
 
     public Item getItem() {
         return item;
+    }
+
+    @Override
+    public String toString() {
+        return "Auction Item #" + getAuctionId() + "\n\tName: " + item.getItemTitle() + "Desc: " + item.getItemDescription() + "Latest bid: £" + getLatestPrice();
     }
 }
