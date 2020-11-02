@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AuctionRepostiory {
+public class AuctionRepository {
     public Map<Integer, AuctionItem> auctions;
 
-    public AuctionRepostiory() {
+    public AuctionRepository() {
         auctions = new HashMap<>();
     }
 

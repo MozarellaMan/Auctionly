@@ -1,6 +1,6 @@
 package server;
 
-import server.auctions.AuctionRepostiory;
+import server.auctions.AuctionRepository;
 import server.item.Item;
 import server.item.ItemRepository;
 import util.SecurityHelper;
@@ -12,7 +12,7 @@ import java.util.List;
 public class AuctionService extends java.rmi.server.UnicastRemoteObject implements Auction {
 
     private String key;
-    private AuctionRepostiory auctions;
+    private AuctionRepository auctions;
 
     protected AuctionService() throws RemoteException {
         super();
@@ -21,7 +21,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     protected AuctionService(String key) throws RemoteException {
         super();
         this.key = key;
-        this.auctions = new AuctionRepostiory();
+        this.auctions = new AuctionRepository();
     }
 
     @Override
