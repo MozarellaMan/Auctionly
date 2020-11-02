@@ -13,6 +13,8 @@ public interface Auction extends Remote {
 
     SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException;
 
+    boolean registerUser(String name, String email, String role) throws RemoteException;
+
     List<Item> getActiveAuctions() throws RemoteException;
 
     boolean bid(int auctionId, String name, String email) throws RemoteException;

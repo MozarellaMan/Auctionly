@@ -56,6 +56,11 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
     @Override
+    public boolean registerUser(String name, String email, String role) throws RemoteException {
+        return false;
+    }
+
+    @Override
     public List<Item> getActiveAuctions() throws RemoteException {
         return null;
     }
