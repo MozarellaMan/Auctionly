@@ -2,22 +2,22 @@ package server.item;
 
 import java.io.Serializable;
 
-public class AuctionItem implements Serializable {
-    private int itemId;
-    private String itemTitle;
-    private String itemDescription;
-    private ItemCondition condition;
+public class Item implements Serializable {
+    private final int itemId;
+    private final String itemTitle;
+    private final String itemDescription;
+    private final ItemCondition condition;
 
 
-    public static AuctionItem Of(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
-        return new AuctionItem(itemId, itemTitle, itemDescription, condition);
-    }
-
-    private AuctionItem(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
+    private Item(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
         this.itemId = itemId;
         this.itemTitle = itemTitle;
         this.itemDescription = itemDescription;
         this.condition = condition;
+    }
+
+    public static Item Of(int itemId, String itemTitle, String itemDescription, ItemCondition condition) {
+        return new Item(itemId, itemTitle, itemDescription, condition);
     }
 
     public int getItemId() {

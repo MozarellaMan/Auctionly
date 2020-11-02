@@ -1,6 +1,6 @@
 package client;
 
-import server.item.AuctionItem;
+import server.item.Item;
 import util.SecurityHelper;
 import util.Util;
 
@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class ClientRunner {
 
     public static final String KEY_PATH = "./key.txt";
-    public static final SecurityHelper<AuctionItem> AUCTION_ITEM_SECURITY = new SecurityHelper<>();
+    public static final SecurityHelper<Item> ITEM_SECURITY_HELPER = new SecurityHelper<>();
 
     public static boolean keyExists() {
         var file = Paths.get(KEY_PATH);
@@ -36,7 +36,7 @@ public class ClientRunner {
         }
 
         var secretKey = keyExists ? SecurityHelper.keyFromString(onSystemKey) : SecurityHelper.keyFromString(scanner.nextLine());
-        var item = AUCTION_ITEM_SECURITY.decrypt(object,secretKey);
+        var item = ITEM_SECURITY_HELPER.decrypt(object, secretKey);
         item.ifPresentOrElse(System.out::println, () -> Util.warning("Item could not be decrypted!"));
     }
 
