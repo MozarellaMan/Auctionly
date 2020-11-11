@@ -3,6 +3,8 @@ package util;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 import java.util.Optional;
 
 import static util.Util.warning;
@@ -12,7 +14,7 @@ public class Authenticator<T extends Serializable> {
 
     public static Optional<KeyPair> generateKey() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA", "SUN");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
             keyGen.initialize(1024, random);
             KeyPair pair = keyGen.generateKeyPair();
@@ -68,6 +70,20 @@ public class Authenticator<T extends Serializable> {
             return Optional.empty();
         } catch (ClassNotFoundException e) {
             warning("Signed object could not be unsigned due to unrecognised class!");
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<PrivateKey> privateKeyFromStringRSA(String key) {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
+
+        try {
+            KeyFactory fact = KeyFactory.getInstance("RSA");
+            PrivateKey priv = fact.generatePrivate(keySpec);
+            return Optional.of(priv);
+        } catch (Exception e) {
+            warning("Private key retrieval failed. Reason:" + e.getClass().getName());
             return Optional.empty();
         }
     }
