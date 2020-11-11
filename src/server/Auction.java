@@ -12,15 +12,15 @@ import java.util.List;
 
 public interface Auction extends Remote {
 
-    Item getSpecUnsafe(int itemId, int clientId) throws RemoteException;
+    Item getSpecAuth(int itemId, int clientId) throws RemoteException;
 
     SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException;
 
     int registerUser(String name, String email, String role) throws RemoteException;
 
-    List<AuctionItem> getActiveAuctions() throws RemoteException;
+    List<AuctionItem> getActiveAuctions(int userId) throws RemoteException;
 
-    List<AuctionItem> getClosedAuctions() throws RemoteException;
+    List<AuctionItem> getClosedAuctions(int userId) throws RemoteException;
 
     boolean bid(int auctionId, float offerPrice, int userId) throws RemoteException;
 

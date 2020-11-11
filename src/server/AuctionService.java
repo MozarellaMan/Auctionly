@@ -86,12 +86,14 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
 
     @Override
-    public List<AuctionItem> getActiveAuctions() throws RemoteException {
+    public List<AuctionItem> getActiveAuctions(int userId) throws RemoteException {
+        authCheck(userId);
         return auctions.list();
     }
 
     @Override
-    public List<AuctionItem> getClosedAuctions() throws RemoteException {
+    public List<AuctionItem> getClosedAuctions(int userId) throws RemoteException {
+        authCheck(userId);
         return auctions.listClosed();
     }
 
@@ -103,6 +105,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         var user = users.get(userId).orElseThrow(() ->
                 new RemoteException("User does not exist!")
         );
+        authCheck(userId);
         if (user.equals(auction.getOwner()))
             throw new RemoteException("User is the owner of the auction item. The owner cannot bid!");
 
@@ -119,6 +122,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         var user = users.get(userId).orElseThrow(() ->
                 new RemoteException("User does not exist!")
         );
+        authCheck(userId);
         var newAuctionItem = AuctionItem.of(user, item, reservePrice, startPrice);
         auctions.add(newAuctionItem.getId(), newAuctionItem);
         return newAuctionItem.getId();
@@ -128,7 +132,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     public boolean close(int auctionId, int ownerId) throws RemoteException {
         if (users.exists(ownerId))
             throw new RemoteException("User does not exist!");
-
+        authCheck(ownerId);
         var auction = auctions.get(auctionId).orElseThrow(() ->
                 new RemoteException("Auction item does not exist!")
         );
@@ -140,6 +144,21 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
         return true;
     }
+
+    @Override
+    public Item getSpecAuth(int itemId, int userId) throws RemoteException {
+        authCheck(userId);
+        System.out.println("Request for user " + userId + ":");
+        return ItemRepository.getAuctionItem(itemId).orElseThrow(
+                () -> new RemoteException("Client failure: Auction item with id " + itemId + " does not exist!")
+        );
+    }
+
+    private void authCheck(int userId) throws RemoteException {
+        if (!userSecurity.isAuthenticated(userId, users))
+            throw new RemoteException("You cannot do this. Your account has not been authenticated.");
+    }
+
 
     @Override
     public SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException {
@@ -161,11 +180,4 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
     }
 
-    @Override
-    public Item getSpecUnsafe(int itemId, int clientId) throws RemoteException {
-        System.out.println("Request for client " + clientId + ":");
-        return ItemRepository.getAuctionItem(itemId).orElseThrow(
-                () -> new RemoteException("Client " + clientId + " failed:\n\tAuction item with id " + itemId + " does not exist!")
-        );
-    }
 }

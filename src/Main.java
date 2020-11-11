@@ -11,7 +11,6 @@ public class Main {
         try {
             ClientRequest request = new ClientRequest();
             request.make();
-            request.test(3);
 
         } catch (Exception e) {
             System.err.println("Client request creation error: ");

@@ -36,28 +36,17 @@ public class ClientRequest extends Client implements Serializable {
     }
 
 
-    public void test(int itemId) {
+    public void getSpec(int itemId, int userId) {
         try {
             Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
-            System.out.println(auctionStub.getSpec(itemId, request));
-        } catch (Exception e) {
-            System.err.println("Client exception: " + e.toString());
-            e.printStackTrace();
-        }
-    }
-
-    public SealedObject getSealed(int itemId) {
-        try {
-            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
-            return auctionStub.getSpec(itemId, request);
+            System.out.println(auctionStub.getSpecAuth(itemId, userId));
         } catch (ConnectException e) {
             Util.warning("Connection could not be made to server!");
         } catch (RemoteException e) {
-            Util.warning("Remote call error: " + e.getLocalizedMessage());
+            Util.warning("Remote call error: " + e.getCause().getMessage());
         } catch (Exception e) {
-            Util.warning("Client exception: " + e.getMessage());
+            Util.warning("Request exception: " + e.getCause().getMessage());
         }
-        return null;
     }
 
     public int register(String name, String email, String role) {
@@ -67,9 +56,9 @@ public class ClientRequest extends Client implements Serializable {
         } catch (ConnectException e) {
             Util.warning("Connection could not be made to server!");
         } catch (RemoteException e) {
-            Util.warning("Remote call error: " + e.getLocalizedMessage());
+            Util.warning("Remote call error: " + e.getCause().getMessage());
         } catch (Exception e) {
-            Util.warning("Client exception: " + e.getMessage());
+            Util.warning("Request exception: " + e.getCause().getMessage());
         }
         return 0;
     }
