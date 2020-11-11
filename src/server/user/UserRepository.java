@@ -3,9 +3,7 @@ package server.user;
 
 import util.Util;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class UserRepository {
     private final Map<Integer, User> users;
@@ -46,4 +44,7 @@ public class UserRepository {
                 .findFirst();
     }
 
+    public List<User> list() {
+        return new ArrayList<>(users.values());
+    }
 }

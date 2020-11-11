@@ -60,4 +60,18 @@ public class ClientRequest extends Client implements Serializable {
         return null;
     }
 
+    public int register(String name, String email, String role) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.registerUser(name, email, role);
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getLocalizedMessage());
+        } catch (Exception e) {
+            Util.warning("Client exception: " + e.getMessage());
+        }
+        return 0;
+    }
+
 }

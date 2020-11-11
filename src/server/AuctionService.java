@@ -44,11 +44,12 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         var newUser = users.register(name, email, Role.valueOf(role));
         if (newUser > 0) {
             userSecurity.addUser(users.get(newUser).orElseThrow());
+            System.out.println(users.list());
+            System.out.println(userSecurity.list());
             return newUser;
         } else
             throw new RemoteException("User could not be registered!");
     }
-
 
     @Override
     public boolean authenticate(int userId, PublicKey key, SignedObject challenge) throws RemoteException {
