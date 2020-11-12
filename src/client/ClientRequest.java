@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
+import java.security.SignedObject;
+import java.util.Optional;
 
 public class ClientRequest extends Client implements Serializable {
     private SealedObject request;
@@ -58,9 +61,51 @@ public class ClientRequest extends Client implements Serializable {
         } catch (RemoteException e) {
             Util.warning("Remote call error: " + e.getCause().getMessage());
         } catch (Exception e) {
-            Util.warning("Request exception: " + e.getCause().getMessage());
+            Util.warning("Request exception: " + e.getMessage());
         }
         return 0;
+    }
+
+    public Optional<SignedObject> sendChallenge(int challenge) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return Optional.of(auctionStub.acceptChallenge(challenge));
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return Optional.empty();
+    }
+
+    public int getChallenge() {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.generateChallenge();
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean authenticate(int id, PublicKey pKey, SignedObject challenge) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.authenticate(id, pKey, challenge);
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return false;
     }
 
 }

@@ -44,7 +44,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         var newUser = users.register(name, email, Role.valueOf(role));
         if (newUser > 0) {
             userSecurity.addUser(users.get(newUser).orElseThrow());
-            System.out.println(users.list());
+            System.out.println(users.list() + "id: " + newUser);
             System.out.println(userSecurity.list());
             return newUser;
         } else
@@ -53,7 +53,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
     @Override
     public boolean authenticate(int userId, PublicKey key, SignedObject challenge) throws RemoteException {
-        if (users.exists(userId))
+        if (!users.exists(userId))
             throw new RemoteException("User does not exist!");
         try {
             var signature = Signature.getInstance(key.getAlgorithm());
@@ -161,6 +161,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
 
     @Override
+    @Deprecated
     public SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException {
         System.out.println("Request for encrypted client " + clientRequest);
         Item item = ItemRepository.getAuctionItem(itemId).orElseThrow(

@@ -2,8 +2,11 @@ package util;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -12,9 +15,11 @@ import static util.Util.warning;
 
 public class Authenticator<T extends Serializable> {
 
+    private static final String ALGO = "DSA";
+
     public static Optional<KeyPair> generateKey() {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ALGO);
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
             keyGen.initialize(1024, random);
             KeyPair pair = keyGen.generateKeyPair();
@@ -40,23 +45,16 @@ public class Authenticator<T extends Serializable> {
         }
     }
 
-    public Optional<SignedObject> sign(T unsignedObj, PrivateKey key) {
-        try {
-            var signature = Signature.getInstance(key.getAlgorithm());
-            var signedObj = new SignedObject(unsignedObj, key, signature);
-            return Optional.of(signedObj);
+    public static Optional<PrivateKey> privateKeyFromStringRSA(String key) {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
 
-        } catch (NoSuchAlgorithmException e) {
-            warning("No such algorithm to generate key-pair!");
-            return Optional.empty();
-        } catch (IOException e) {
-            warning("IO issue is preventing object from being signed!");
-            return Optional.empty();
-        } catch (SignatureException e) {
-            warning("A problem occurred with signing the object");
-            return Optional.empty();
-        } catch (InvalidKeyException e) {
-            warning("Invalid key!");
+        try {
+            KeyFactory fact = KeyFactory.getInstance(ALGO);
+            PrivateKey priv = fact.generatePrivate(keySpec);
+            return Optional.of(priv);
+        } catch (Exception e) {
+            warning("Private key retrieval failed. Reason:" + e.getClass().getName());
             return Optional.empty();
         }
     }
@@ -74,16 +72,60 @@ public class Authenticator<T extends Serializable> {
         }
     }
 
-    public static Optional<PrivateKey> privateKeyFromStringRSA(String key) {
+    public static Optional<PublicKey> publicKeyFromStringRSA(String key) {
         byte[] decodedKey = Base64.getDecoder().decode(key);
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedKey);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedKey);
 
         try {
-            KeyFactory fact = KeyFactory.getInstance("RSA");
-            PrivateKey priv = fact.generatePrivate(keySpec);
+            KeyFactory fact = KeyFactory.getInstance(ALGO);
+            PublicKey priv = fact.generatePublic(keySpec);
             return Optional.of(priv);
         } catch (Exception e) {
+            warning("Public key retrieval failed. Reason:" + e.getClass().getName());
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<PublicKey> publicKeyFromFileRSA(String path) {
+        try {
+            var keyString = new String(Files.readAllBytes(Paths.get(path)));
+            var publicKey = publicKeyFromStringRSA(keyString).orElseThrow();
+            return Optional.of(publicKey);
+        } catch (Exception e) {
+            warning("Public key retrieval failed. Reason:" + e.getClass().getName());
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<PrivateKey> privateKeyFromFileDSA(String path) {
+        try {
+            var keyString = new String(Files.readAllBytes(Paths.get(path)));
+            var privateKey = privateKeyFromStringRSA(keyString).orElseThrow();
+            return Optional.of(privateKey);
+        } catch (Exception e) {
             warning("Private key retrieval failed. Reason:" + e.getClass().getName());
+            return Optional.empty();
+        }
+    }
+
+    public Optional<SignedObject> sign(T unsignedObj, PrivateKey key) {
+        try {
+            var signature = Signature.getInstance(key.getAlgorithm());
+            var signedObj = new SignedObject(unsignedObj, key, signature);
+            return Optional.of(signedObj);
+
+        } catch (NoSuchAlgorithmException e) {
+            warning("No such algorithm to generate key-pair!");
+            e.printStackTrace();
+            return Optional.empty();
+        } catch (IOException e) {
+            warning("IO issue is preventing object from being signed!");
+            return Optional.empty();
+        } catch (SignatureException e) {
+            warning("A problem occurred with signing the object");
+            return Optional.empty();
+        } catch (InvalidKeyException e) {
+            warning("Invalid key!");
             return Optional.empty();
         }
     }

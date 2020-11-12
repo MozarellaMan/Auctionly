@@ -23,7 +23,7 @@ public class UserSecurity {
 
     public boolean authenticate(int userId, UserRepository userRepo) {
         var user = userRepo.get(userId).orElse(null);
-        if (userRepo.exists(userId)) return false;
+        if (!userRepo.exists(userId)) return false;
         currentUsers.put(user, AuthState.AUTHENTICATED);
         return true;
     }

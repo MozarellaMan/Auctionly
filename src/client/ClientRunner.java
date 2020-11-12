@@ -30,21 +30,24 @@ public class ClientRunner {
                 String role = inputArgs[3].toUpperCase();
 
                 id = request.register(name, email, role);
+                if (id == 0) continue;
                 System.out.println("Your user ID: " + id);
-                Util.warning("This account is NOT authenticated!");
+                Util.warning("This account is NOT authenticated! Please authenticate.");
                 Util.writeKeys(PUB_KEY_PATH + id + ".txt", PRIV_KEY_PATH + id + ".txt");
-
+                ClientAuth.verifyServer(id, request);
             } else if (inputArgs.length == 2 && inputArgs[0].equals("get-spec")) {
                 int itemId = Integer.parseInt(inputArgs[1]);
                 request.getSpec(itemId, id);
             } else if (inputArgs[0].equals("quit")) {
+                if (id != 0) {
+                    File priv = new File(PRIV_KEY_PATH + id + ".txt");
+                    File pub = new File(PUB_KEY_PATH + id + ".txt");
+                    if (priv.delete() && pub.delete())
+                        System.out.println("Cleaned up keys.");
+                    else
+                        System.out.println("Failed to clean up keys. They are still there or none were made.");
+                }
                 System.out.println("Bye!");
-                File priv = new File(PRIV_KEY_PATH + id + ".txt");
-                File pub = new File(PUB_KEY_PATH + id + ".txt");
-                if (priv.delete() && pub.delete())
-                    System.out.println("Cleaned up keys.");
-                else
-                    System.out.println("Failed to clean up keys. They are still there or none were made.");
                 break;
             } else {
                 Util.warning("Unsupported command!");
