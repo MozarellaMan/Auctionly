@@ -24,7 +24,7 @@ public interface Auction extends Remote {
 
     boolean bid(int auctionId, float offerPrice, int userId) throws RemoteException;
 
-    int sell(float startPrice, float reservePrice, Item item, int userId) throws RemoteException;
+    int sell(float startPrice, float reservePrice, int itemId, int userId) throws RemoteException;
 
     boolean close(int auctionId, int ownerId) throws RemoteException;
 

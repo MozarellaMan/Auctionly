@@ -109,6 +109,9 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         if (user.equals(auction.getOwner()))
             throw new RemoteException("User is the owner of the auction item. The owner cannot bid!");
 
+        if (user.getUserRole() == Role.SELLER)
+            throw new RemoteException("User is a seller, and cannot bid on auction items!");
+
         boolean bid = auction.bid(user, offerPrice);
 
         if (!bid)
@@ -118,11 +121,18 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
     @Override
-    public int sell(float startPrice, float reservePrice, Item item, int userId) throws RemoteException {
+    public int sell(float startPrice, float reservePrice, int itemId, int userId) throws RemoteException {
         var user = users.get(userId).orElseThrow(() ->
                 new RemoteException("User does not exist!")
         );
         authCheck(userId);
+        if (user.getUserRole() == Role.BUYER)
+            throw new RemoteException("User is a buyer, and cannot sell new auction items!");
+        if (reservePrice > startPrice)
+            throw new RemoteException("Reserve price cannot be bigger than starting price!");
+        var item = ItemRepository.getAuctionItem(itemId).orElseThrow(
+                () -> new RemoteException("Invalid request: Auction item with id " + itemId + " does not exist!")
+        );
         var newAuctionItem = AuctionItem.of(user, item, reservePrice, startPrice);
         auctions.add(newAuctionItem.getId(), newAuctionItem);
         return newAuctionItem.getId();
@@ -130,7 +140,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
     @Override
     public boolean close(int auctionId, int ownerId) throws RemoteException {
-        if (users.exists(ownerId))
+        if (!users.exists(ownerId))
             throw new RemoteException("User does not exist!");
         authCheck(ownerId);
         var auction = auctions.get(auctionId).orElseThrow(() ->

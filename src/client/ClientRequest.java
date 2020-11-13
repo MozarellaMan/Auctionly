@@ -108,4 +108,46 @@ public class ClientRequest extends Client implements Serializable {
         return false;
     }
 
+    public int sell(float startPrice, float reservePrice, int itemId, int userId) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.sell(startPrice, reservePrice, itemId, userId);
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public boolean bid(int auctionId, float offerPrice, int userId) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.bid(auctionId, offerPrice, userId);
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean close(int auctionId, int ownerId) {
+        try {
+            Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
+            return auctionStub.close(auctionId, ownerId);
+        } catch (ConnectException e) {
+            Util.warning("Connection could not be made to server!");
+        } catch (RemoteException e) {
+            Util.warning("Remote call error: " + e.getCause().getMessage());
+        } catch (Exception e) {
+            Util.warning("Request exception: " + e.getMessage());
+        }
+        return false;
+    }
+
 }

@@ -3,9 +3,10 @@ package server.auctions;
 import server.item.Item;
 import server.user.User;
 
+import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class AuctionItem {
+public class AuctionItem implements Serializable {
     private final User owner;
     private User highestBidder;
     private final int id;
@@ -46,10 +47,6 @@ public class AuctionItem {
         return false;
     }
 
-    public Item getItem() {
-        return item;
-    }
-
     public User getOwner() {
         return owner;
     }
@@ -61,7 +58,7 @@ public class AuctionItem {
     @Override
     public String toString() {
         return this.state == AuctionState.Open ?
-                "Auction Item #" + getId() + "\n\tName: " + item.getItemTitle() + "Desc: " + item.getItemDescription() + "Latest bid: £" + getLatestPrice()
-                : "Auction #" + getId() + " closed by " + (highestBidder == null ? "owner" : highestBidder.getName()) + " at price £" + getLatestPrice();
+                "Auction Item #" + getId() + "\n\tName: " + item.getItemTitle() + " Latest bid: £" + getLatestPrice() + " Desc: " + item.getItemDescription()
+                : "Auction #" + getId() + (highestBidder == null ? " closed by owner" : " won by " + highestBidder.getName()) + " at price £" + getLatestPrice();
     }
 }

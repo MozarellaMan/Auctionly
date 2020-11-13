@@ -1,8 +1,9 @@
 package server.user;
 
+import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class User {
+public class User implements Serializable {
     private final int id;
     private final String name;
     private final String email;
