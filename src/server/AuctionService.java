@@ -160,7 +160,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         authCheck(userId);
         System.out.println("Request for user " + userId + ":");
         return ItemRepository.getAuctionItem(itemId).orElseThrow(
-                () -> new RemoteException("Client failure: Auction item with id " + itemId + " does not exist!")
+                () -> new RemoteException("Bad request: Item with id " + itemId + " does not exist!")
         );
     }
 

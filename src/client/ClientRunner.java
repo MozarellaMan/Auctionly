@@ -13,8 +13,8 @@ import java.util.Scanner;
 
 public class ClientRunner {
 
-    public static String PRIV_KEY_PATH = "./c_priv_key";
-    public static String PUB_KEY_PATH = "./c_pub_key";
+    public static final String PRIV_KEY_PATH = "./c_priv_key";
+    public static final String PUB_KEY_PATH = "./c_pub_key";
     public static int id = 0;
     // public static final SecurityHelper<Item> ITEM_SECURITY_HELPER = new SecurityHelper<>();
 
@@ -24,14 +24,18 @@ public class ClientRunner {
         Scanner scanner = new Scanner(System.in);
         ClientRequest request = new ClientRequest();
 
+        System.out.println("Type 'commands' to see a list of commands");
         System.out.println("Enter a request: ");
         while (true) {
             System.out.print("> ");
             String input = scanner.nextLine();
             String[] inputArgs = input.split(" ");
             try {
+                inputArgs[0] = inputArgs[0].toLowerCase();
                 Auction auctionStub = (Auction) Naming.lookup("rmi://localhost/AuctionService");
-                if (inputArgs[0].equals("register")) {
+                if (inputArgs[0].equals("commands")) {
+                    printCommands();
+                } else if (inputArgs[0].equals("register")) {
                     if (inputArgs.length > 4) continue;
                     String name = inputArgs[1];
                     String email = inputArgs[2];
@@ -91,6 +95,8 @@ public class ClientRunner {
                 Util.warning("Connection could not be made to server!");
             } catch (RemoteException e) {
                 Util.warning("Remote call error: " + e.getCause().getMessage());
+            } catch (IndexOutOfBoundsException e) {
+                Util.warning("Badly formed command!");
             } catch (Exception e) {
                 Util.warning("Client exception: " + e.getMessage());
             }
@@ -108,6 +114,18 @@ public class ClientRunner {
                 System.out.println("Failed to clean up keys. They are still there or none were made.");
         }
         System.out.println("Bye!");
+    }
+
+    private static void printCommands() {
+        System.out.println("register\tname      \temail      \tbuyer|seller");
+        System.out.println("get-spec\titem_id");
+        System.out.println("sell    \titem_id   \tstart_price\treserve_price");
+        System.out.println("bid     \tauction_id\toffer_price");
+        System.out.println("close   \tauction_id");
+        System.out.println("list-active");
+        System.out.println("list-closed");
+        System.out.println("commands");
+        System.out.println("quit");
     }
 
     private static void printAuctions(List<AuctionItem> items) {

@@ -7,8 +7,8 @@ import java.nio.file.Paths;
 import static util.Util.writeKeys;
 
 public class ServerRunner {
-    public static String PRIV_KEY_PATH = "./s_priv_key.txt";
-    public static String PUB_KEY_PATH = "./s_pub_key.txt";
+    public static final String PRIV_KEY_PATH = "./s_priv_key.txt";
+    public static final String PUB_KEY_PATH = "./s_pub_key.txt";
 
     public static void main(String[] args) {
         AuctionServer server = new AuctionServer();

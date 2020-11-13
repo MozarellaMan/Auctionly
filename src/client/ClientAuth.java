@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ClientAuth {
 
-    public static String SPUB_KEY_PATH = "./s_pub_key.txt";
+    public static final String SPUB_KEY_PATH = "./s_pub_key.txt";
 
     public static void verifyServer(int id, ClientRequest client) {
         System.out.println("Sending server authentication challenge...");

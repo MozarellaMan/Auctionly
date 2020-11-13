@@ -8,7 +8,7 @@ import java.rmi.Naming;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Client {
-    protected int clientId;
+    protected final int clientId;
 
     public Client() {
         this.clientId = ThreadLocalRandom.current().nextInt(1,100);

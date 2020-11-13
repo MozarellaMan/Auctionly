@@ -19,6 +19,7 @@ public class AuctionRepository {
         return Optional.ofNullable(auctions.get(auctionId));
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public boolean close(int auctionId) {
         var closedAuction = get(auctionId).orElse(null);
         if (closedAuction == null) return false;
