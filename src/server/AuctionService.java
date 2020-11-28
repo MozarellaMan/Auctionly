@@ -98,7 +98,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
     @Override
-    public boolean bid(int auctionId, float offerPrice, int userId) throws RemoteException {
+    public synchronized boolean bid(int auctionId, float offerPrice, int userId) throws RemoteException {
         var auction = auctions.get(auctionId).orElseThrow(() ->
                 new RemoteException("Auction item does not exist!")
         );

@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+
+task rmiregistry {
+    dependsOn build
+    doFirst {
+        println("Starting RMI registry")
+        ext.process = new ProcessBuilder()
+            .directory(sourceSets.main.java.outputDir)
+            .command("rmiregistry")
+            .start()
+    }
+}
+
+task stopRmiRegistry {
+    doFirst {
+        println("Stopping RMI registry")
+        if (tasks.watch.process != null) {
+            tasks.watch.process.destroy()
+        }
+    }
+}
+
+task server(type: JavaExec) {
+    dependsOn rmiregistry
+    group = "Execution"
+    description = "Run the server class"
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'server.ServerRunner'
+    finalizedBy stopRmiRegistry
+}
+
+task client(type: JavaExec) {
+    group = "Execution"
+    description = "Run a client class"
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'client.ClientRunner'
+    standardInput = System.in
+}
+
+dependencies {
+    implementation 'org.jgroups:jgroups:4.0.0.Final'
+    compile 'junit:junit:4.12'
+}
