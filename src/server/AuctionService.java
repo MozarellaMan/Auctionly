@@ -1,6 +1,7 @@
 package server;
 
 import server.auctions.AuctionItem;
+import server.auctions.AuctionRepoCluster;
 import server.auctions.AuctionRepository;
 import server.item.Item;
 import server.item.ItemRepository;
@@ -23,6 +24,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
     private String key;
     private AuctionRepository auctions;
+    private AuctionRepoCluster auctionChannel;
     private UserRepository users;
     private UserSecurity userSecurity;
 
@@ -36,8 +38,13 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         this.auctions = new AuctionRepository();
         this.users = new UserRepository();
         this.userSecurity = new UserSecurity();
+        this.auctionChannel = new AuctionRepoCluster();
+        auctionChannel.startAll();
     }
 
+    public AuctionRepoCluster getAuctionChannel() {
+        return auctionChannel;
+    }
 
     @Override
     public int registerUser(String name, String email, String role) throws RemoteException {
@@ -88,7 +95,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     @Override
     public List<AuctionItem> getActiveAuctions(int userId) throws RemoteException {
         authCheck(userId);
-        return auctions.list();
+        return auctionChannel.get().orElseThrow().list();
     }
 
     @Override
@@ -135,6 +142,11 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         );
         var newAuctionItem = AuctionItem.of(user, item, reservePrice, startPrice);
         auctions.add(newAuctionItem.getId(), newAuctionItem);
+        try {
+            auctionChannel.send(newAuctionItem.getId(), newAuctionItem);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return newAuctionItem.getId();
     }
 
@@ -170,6 +182,7 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     }
 
 
+    /*** @deprecated not needed anymore */
     @Override
     @Deprecated
     public SealedObject getSpec(int itemId, SealedObject clientRequest) throws RemoteException {

@@ -1,9 +1,12 @@
 package server.user;
 
+import server.channels.RepoInterface;
+
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserSecurity {
+public class UserSecurity implements Serializable, RepoInterface {
 
     private final Map<User, AuthState> currentUsers;
 

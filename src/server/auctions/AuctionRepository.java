@@ -1,14 +1,22 @@
 package server.auctions;
 
+import server.channels.RepoInterface;
+
+import java.io.Serializable;
 import java.util.*;
 
-public class AuctionRepository {
+public class AuctionRepository implements Serializable, RepoInterface {
     private final Map<Integer, AuctionItem> auctions;
     private final Map<Integer, AuctionItem> closedAuctions;
 
     public AuctionRepository() {
         auctions = new HashMap<>();
         closedAuctions = new HashMap<>();
+    }
+
+    public AuctionRepository(Map<Integer, AuctionItem> auctions, Map<Integer, AuctionItem> closedAuctions) {
+        this.auctions = auctions;
+        this.closedAuctions = closedAuctions;
     }
 
     public void add(int auctionId, AuctionItem auctionItem) {
@@ -41,4 +49,13 @@ public class AuctionRepository {
         return new ArrayList<>(closedAuctions.values());
     }
 
+    public void clear() {
+        auctions.clear();
+        closedAuctions.clear();
+    }
+
+    public void addAll(AuctionRepository auctions) {
+        this.auctions.putAll(auctions.auctions);
+        this.closedAuctions.putAll(auctions.closedAuctions);
+    }
 }
