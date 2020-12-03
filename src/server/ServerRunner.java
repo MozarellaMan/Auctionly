@@ -20,22 +20,27 @@ public class ServerRunner {
         serverThread.join();
 
         System.out.println("Type 'commands' to see a list of commands");
+        label:
         while (true) {
             System.out.print("\n> ");
             String input = scanner.nextLine();
             String[] inputArgs = input.split(" ");
             try {
                 inputArgs[0] = inputArgs[0].toLowerCase();
-                if (inputArgs[0].equals("quit")) {
-                    auctionServer.getAuctionService().getAuctionChannel().closeAll();
-                    System.exit(0);
-                    break;
-                } else if (inputArgs[0].equals("add")) {
-                    auctionServer.getAuctionService().getAuctionChannel().add();
-                } else if (inputArgs[0].equals("close-orig")) {
-                    auctionServer.getAuctionService().getAuctionChannel().closeOriginalClusters();
-                } else {
-                    Util.warning("Unsupported command!");
+                switch (inputArgs[0]) {
+                    case "quit":
+                        auctionServer.getAuctionService().getAuctionChannel().closeAll();
+                        System.exit(0);
+                        break label;
+                    case "add":
+                        auctionServer.getAuctionService().getAuctionChannel().add();
+                        break;
+                    case "close-orig":
+                        auctionServer.getAuctionService().getAuctionChannel().closeOriginalClusters();
+                        break;
+                    default:
+                        Util.warning("Unsupported command!");
+                        break;
                 }
             } catch (Exception e) {
                 Util.warning("Server exception: " + e.getMessage());
