@@ -4,7 +4,6 @@ import server.Auction;
 import util.SecurityHelper;
 import util.Util;
 
-import javax.crypto.SealedObject;
 import java.io.Serializable;
 import java.rmi.ConnectException;
 import java.rmi.Naming;
@@ -14,7 +13,6 @@ import java.security.SignedObject;
 import java.util.Optional;
 
 public class ClientRequest extends Client implements Serializable {
-    private SealedObject request;
     private final SecurityHelper<ClientRequest> securityHelper;
 
     public ClientRequest(){
@@ -24,18 +22,12 @@ public class ClientRequest extends Client implements Serializable {
 
     public void make()  {
         var sealedRequest = securityHelper.encrypt(this, true);
-        sealedRequest.ifPresentOrElse(req -> {
-            System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
-            this.request = req;
-        }, () -> Util.warning("Request could not be encrypted!"));
+        sealedRequest.ifPresentOrElse(req -> System.out.println("Request creation for client " + clientId + " successful. Used key on system."), () -> Util.warning("Request could not be encrypted!"));
     }
 
     public void make(String key) {
         var sealedRequest = securityHelper.encrypt(this, key);
-        sealedRequest.ifPresentOrElse(req -> {
-            System.out.println("Request creation for client " + clientId + " successful. Used key on system.");
-            this.request = req;
-        }, () -> Util.warning("Request could not be encrypted!"));
+        sealedRequest.ifPresentOrElse(req -> System.out.println("Request creation for client " + clientId + " successful. Used key on system."), () -> Util.warning("Request could not be encrypted!"));
     }
 
 

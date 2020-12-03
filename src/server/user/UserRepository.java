@@ -3,9 +3,10 @@ package server.user;
 
 import util.Util;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class UserRepository {
+public class UserRepository implements Serializable {
     private final Map<Integer, User> users;
 
     public UserRepository() {

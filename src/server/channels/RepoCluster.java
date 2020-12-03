@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public abstract class RepoCluster<T extends Serializable, A extends ReceiverAdapter & RepoChannel<? extends Serializable>> implements Cluster<T> {
+public abstract class RepoCluster<T extends Serializable, A extends ReceiverAdapter & RepoChannel<? extends Serializable>> implements Cluster<T>, Serializable {
     protected List<A> channels;
     private int startAmount = 3;
 

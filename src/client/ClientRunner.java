@@ -15,9 +15,7 @@ public class ClientRunner {
 
     public static final String PRIV_KEY_PATH = "./c_priv_key";
     public static final String PUB_KEY_PATH = "./c_pub_key";
-    public static int id = 0;
-    // public static final SecurityHelper<Item> ITEM_SECURITY_HELPER = new SecurityHelper<>();
-
+    private static int id = 0;
 
     public static void main(String[] args) {
         Runtime.getRuntime().addShutdownHook(new Thread(ClientRunner::cleanup, "Shutdown-thread"));

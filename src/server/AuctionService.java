@@ -118,10 +118,10 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
 
         try {
             auctionChannel.sendBid(auction.getId(), user, offerPrice);
+            return true;
         } catch (Exception e) {
             throw new RemoteException("Bid could not be sent to cluster: " + e.getMessage());
         }
-        return true;
     }
 
     @Override

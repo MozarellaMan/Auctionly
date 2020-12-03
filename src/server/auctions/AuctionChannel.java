@@ -19,7 +19,7 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
     public void start() throws Exception {
         channel = new JChannel();
         channel.setReceiver(this);
-        channel.setName("AuctionRepo" + ThreadLocalRandom.current().nextInt(1, 1000));
+        channel.setName("AuctionLedger" + ThreadLocalRandom.current().nextInt(1, 1000));
         channel.connect("AuctionCluster");
         channel.getState(null, 10000);
     }

@@ -21,7 +21,7 @@ public class AuctionItem implements Serializable {
         this.reservePrice = reservePrice;
         this.latestPrice = startingPrice;
         this.item = item;
-        this.state = AuctionState.Open;
+        this.state = AuctionState.OPEN;
     }
 
     public static AuctionItem of(User owner, Item item, float reservePrice, float startingPrice) {
@@ -36,15 +36,13 @@ public class AuctionItem implements Serializable {
         return latestPrice;
     }
 
-    public boolean bid(User bidder, float offer) {
+    public void bid(User bidder, float offer) {
         if (offer < reservePrice)
-            return false;
+            return;
         if (offer > this.latestPrice) {
             this.latestPrice = offer;
             this.highestBidder = bidder;
-            return true;
         }
-        return false;
     }
 
     public User getOwner() {
@@ -52,12 +50,12 @@ public class AuctionItem implements Serializable {
     }
 
     protected void close() {
-        this.state = AuctionState.Closed;
+        this.state = AuctionState.CLOSED;
     }
 
     @Override
     public String toString() {
-        return this.state == AuctionState.Open ?
+        return this.state == AuctionState.OPEN ?
                 "Auction Item #" + getId() + "\n\tName: " + item.getItemTitle() + " Latest bid: £" + getLatestPrice() + " Desc: " + item.getItemDescription()
                 : "Auction #" + getId() + (highestBidder == null ? " closed by owner" : " won by " + highestBidder.getName()) + " at price £" + getLatestPrice();
     }

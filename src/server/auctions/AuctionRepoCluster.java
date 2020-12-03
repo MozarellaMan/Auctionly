@@ -3,9 +3,10 @@ package server.auctions;
 import server.channels.RepoCluster;
 import server.user.User;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class AuctionRepoCluster extends RepoCluster<AuctionRepository, AuctionChannel> {
+public class AuctionRepoCluster extends RepoCluster<AuctionRepository, AuctionChannel> implements Serializable {
     private int startAmount = 3;
 
     public AuctionRepoCluster() {

@@ -1,7 +1,7 @@
 package server.item;
 
 public enum ItemCondition {
-    New,
-    Used,
-    Refurbished
+    NEW,
+    USED,
+    REFURBISHED
 }

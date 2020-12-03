@@ -1,7 +1,5 @@
 package client;
 
-//import server.Auction;
-
 import server.Auction;
 
 import java.rmi.Naming;
