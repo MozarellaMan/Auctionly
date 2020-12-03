@@ -58,9 +58,12 @@ public abstract class RepoCluster<T extends Serializable, A extends ReceiverAdap
 
     @Override
     public synchronized void closeOriginalClusters() {
-        if (channels.isEmpty() || startAmount > channels.size()) return;
+        var openChannels = channels.stream()
+                .filter(c -> c.isOpen())
+                .collect(Collectors.toList());
+        if (channels.isEmpty() || startAmount > openChannels.size()) return;
         for (int i = 0; i < startAmount; i++) {
-            channels.get(i).close();
+            openChannels.get(i).close();
         }
     }
 
@@ -75,8 +78,12 @@ public abstract class RepoCluster<T extends Serializable, A extends ReceiverAdap
         return Optional.ofNullable(state);
     }
 
-    protected Optional<A> getChannel() {
-        return Optional.ofNullable(channels.get(new Random().nextInt(channels.size())));
+    protected synchronized Optional<A> getChannel() {
+        var openChannels = channels.stream()
+                .filter(c -> c.isOpen())
+                .collect(Collectors.toList());
+
+        return Optional.ofNullable(openChannels.get(new Random().nextInt(openChannels.size())));
     }
 
 }

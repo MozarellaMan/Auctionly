@@ -3,10 +3,13 @@ package server.auctions;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
+import org.jgroups.View;
 import org.jgroups.util.Util;
 import server.channels.RepoChannel;
+import server.user.User;
 
 import java.io.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AuctionChannel extends ReceiverAdapter implements RepoChannel<AuctionRepository> {
     private final AuctionRepository state = new AuctionRepository();
@@ -16,16 +19,29 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
     public void start() throws Exception {
         channel = new JChannel();
         channel.setReceiver(this);
-        channel.setName("AuctionRepo");
+        channel.setName("AuctionRepo" + ThreadLocalRandom.current().nextInt(1, 1000));
         channel.connect("AuctionCluster");
         channel.getState(null, 10000);
     }
 
-    public void send(int id, AuctionItem item) throws Exception {
+    public synchronized void send(int id, AuctionItem item) throws Exception {
         var entry = AuctionEntry.of(id, item);
         Message msg = new Message(null, entry);
         channel.send(msg);
     }
+
+    public synchronized void sendClose(int id) throws Exception {
+        var entry = new AuctionEntry(id, true);
+        Message msg = new Message(null, entry);
+        channel.send(msg);
+    }
+
+    public synchronized void sendBid(int id, User user, float offerPrice) throws Exception {
+        var entry = new AuctionEntry(id, user, offerPrice);
+        Message msg = new Message(null, entry);
+        channel.send(msg);
+    }
+
 
     public AuctionRepository getState() {
         return state;
@@ -47,7 +63,14 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
     public void receive(Message msg) {
         AuctionEntry obj = (AuctionEntry) msg.getObject();
         synchronized (state) {
-            state.add(obj.id, obj.item);
+            if (obj.close) {
+                state.close(obj.id);
+            } else if (obj.bidder != null && obj.offerPrice > 0) {
+                var auctionItem = state.get(obj.id);
+                auctionItem.ifPresent(item -> item.bid(obj.bidder, obj.offerPrice));
+            } else {
+                state.add(obj.id, obj.item);
+            }
         }
     }
 
@@ -56,6 +79,11 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
         synchronized (state) {
             Util.objectToStream(state, new DataOutputStream(output));
         }
+    }
+
+    @Override
+    public void viewAccepted(View view) {
+        System.out.printf("received view %s%n", view);
     }
 
     @Override
@@ -74,10 +102,32 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
     private static class AuctionEntry implements Serializable {
         public final int id;
         public final AuctionItem item;
+        public final boolean close;
+        public final float offerPrice;
+        public final User bidder;
 
         public AuctionEntry(int id, AuctionItem item) {
             this.id = id;
             this.item = item;
+            this.close = false;
+            this.bidder = null;
+            this.offerPrice = 0;
+        }
+
+        public AuctionEntry(int id, boolean close) {
+            this.id = id;
+            this.item = null;
+            this.close = close;
+            this.bidder = null;
+            this.offerPrice = 0;
+        }
+
+        public AuctionEntry(int id, User user, float offerPrice) {
+            this.id = id;
+            this.item = null;
+            this.close = false;
+            this.bidder = user;
+            this.offerPrice = offerPrice;
         }
 
         public static AuctionEntry of(int id, AuctionItem item) {

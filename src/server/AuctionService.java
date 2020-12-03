@@ -2,7 +2,6 @@ package server;
 
 import server.auctions.AuctionItem;
 import server.auctions.AuctionRepoCluster;
-import server.auctions.AuctionRepository;
 import server.item.Item;
 import server.item.ItemRepository;
 import server.user.Role;
@@ -23,7 +22,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class AuctionService extends java.rmi.server.UnicastRemoteObject implements Auction {
 
     private String key;
-    private AuctionRepository auctions;
     private AuctionRepoCluster auctionChannel;
     private UserRepository users;
     private UserSecurity userSecurity;
@@ -35,7 +33,6 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     protected AuctionService(String key) throws RemoteException {
         super();
         this.key = key;
-        this.auctions = new AuctionRepository();
         this.users = new UserRepository();
         this.userSecurity = new UserSecurity();
         this.auctionChannel = new AuctionRepoCluster();
@@ -51,8 +48,6 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         var newUser = users.register(name, email, Role.valueOf(role));
         if (newUser > 0) {
             userSecurity.addUser(users.get(newUser).orElseThrow());
-            System.out.println(users.list() + "id: " + newUser);
-            System.out.println(userSecurity.list());
             return newUser;
         } else
             throw new RemoteException("User could not be registered!");
@@ -101,14 +96,16 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
     @Override
     public List<AuctionItem> getClosedAuctions(int userId) throws RemoteException {
         authCheck(userId);
-        return auctions.listClosed();
+        return auctionChannel.get().orElseThrow().listClosed();
     }
 
     @Override
     public synchronized boolean bid(int auctionId, float offerPrice, int userId) throws RemoteException {
-        var auction = auctions.get(auctionId).orElseThrow(() ->
+        var auction = auctionChannel.get().orElseThrow().get(auctionId).orElseThrow(() ->
                 new RemoteException("Auction item does not exist!")
         );
+        if (auction.getLatestPrice() >= offerPrice)
+            throw new RemoteException("Bid offer is not high enough!");
         var user = users.get(userId).orElseThrow(() ->
                 new RemoteException("User does not exist!")
         );
@@ -119,11 +116,11 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         if (user.getUserRole() == Role.SELLER)
             throw new RemoteException("User is a seller, and cannot bid on auction items!");
 
-        boolean bid = auction.bid(user, offerPrice);
-
-        if (!bid)
-            throw new RemoteException("Bid offer is not high enough!");
-
+        try {
+            auctionChannel.sendBid(auction.getId(), user, offerPrice);
+        } catch (Exception e) {
+            throw new RemoteException("Bid could not be sent to cluster: " + e.getMessage());
+        }
         return true;
     }
 
@@ -141,11 +138,10 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
                 () -> new RemoteException("Invalid request: Auction item with id " + itemId + " does not exist!")
         );
         var newAuctionItem = AuctionItem.of(user, item, reservePrice, startPrice);
-        auctions.add(newAuctionItem.getId(), newAuctionItem);
         try {
             auctionChannel.send(newAuctionItem.getId(), newAuctionItem);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RemoteException("Auction could not be created: " + e.getMessage());
         }
         return newAuctionItem.getId();
     }
@@ -155,13 +151,17 @@ public class AuctionService extends java.rmi.server.UnicastRemoteObject implemen
         if (!users.exists(ownerId))
             throw new RemoteException("User does not exist!");
         authCheck(ownerId);
-        var auction = auctions.get(auctionId).orElseThrow(() ->
+        var auction = auctionChannel.get().orElseThrow().get(auctionId).orElseThrow(() ->
                 new RemoteException("Auction item does not exist!")
         );
 
-        if (auction.getOwner().getId() == (ownerId))
-            auctions.close(auctionId);
-        else
+        if (auction.getOwner().getId() == (ownerId)) {
+            try {
+                auctionChannel.sendClose(auctionId);
+            } catch (Exception e) {
+                throw new RemoteException("Auction could not be closed: " + e.getMessage());
+            }
+        } else
             throw new RemoteException("You cannot close an auction you do not own!");
 
         return true;
