@@ -24,7 +24,8 @@ public class AuctionRepoCluster extends RepoCluster<AuctionRepository, AuctionCh
 
     public void send(int id, AuctionItem item) throws Exception {
         var channel = getChannel().orElseThrow();
-        channel.send(id, item);
+        if (channel.isOpen())
+            channel.send(id, item);
     }
 
     @Override

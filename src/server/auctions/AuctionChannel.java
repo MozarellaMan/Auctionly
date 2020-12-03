@@ -61,6 +61,7 @@ public class AuctionChannel extends ReceiverAdapter implements RepoChannel<Aucti
     @Override
     public void close() {
         if (channel == null) return;
+        channel.disconnect();
         channel.close();
     }
 
